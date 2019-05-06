@@ -1,0 +1,34 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+int BOARD_STATE[9] {};
+
+void print_cell(int index) {
+    string piece;
+    if (index == 0)
+        string piece = " ";
+    else if (index == 1)
+        string piece = "X";
+    else
+        string piece = "O";
+    
+    cout << " " << piece << " ";
+}
+
+void print_board() {
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            print_cell(j);
+        }
+    }
+}
+
+void put_piece(int index, int piece) {
+    BOARD_STATE[index] = piece;
+}
+
+int main() {
+    print_board();
+}
