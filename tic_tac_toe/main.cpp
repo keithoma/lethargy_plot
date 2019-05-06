@@ -18,9 +18,9 @@ void print_cell(int index) {
 }
 
 void print_board() {
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 2; ++j) {
-            print_cell(j);
+    for (int column = 0; column < 2; ++column) {
+        for (int row = 0; row < 2; ++row) {
+            print_cell(3 * column + row);
         }
     }
 }
