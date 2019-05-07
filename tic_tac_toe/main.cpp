@@ -1,10 +1,24 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 using namespace std;
 
-int BOARD_STATE[9] {};
+struct Board {
 
+        int width;
+        int height;
+
+        int tiles;
+        string board_state;
+
+        Board(int width = 3, int height = 3) {
+            tiles = width * height;
+            fill(board_state.begin(), board_state.begin() + tiles, ' ');
+        }
+};
+
+/*
 void print_cell(int index) {
     string piece;
     if (index == 0)
@@ -28,7 +42,13 @@ void print_board() {
 void put_piece(int index, int piece) {
     BOARD_STATE[index] = piece;
 }
+*/
 
 int main() {
-    print_board();
+    Board my_board;
+    cout << "hello" << my_board.board_state[3] << "world";
+    cout << my_board.tiles;
+    cout << my_board.width;
+    cout << my_board.height;
+    return 0;
 }
