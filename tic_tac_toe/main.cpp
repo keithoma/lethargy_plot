@@ -1,54 +1,52 @@
 #include <iostream>
-#include <string>
-#include <algorithm>
+#include <vector>
 
 using namespace std;
 
-struct Board {
 
-        int width;
-        int height;
+class Board {
+    public:
+        // <TODO>: add defualt values such as width, height = 3
+        Board(const unsigned width, const unsigned height);
 
-        int tiles;
-        string board_state;
+        void print_board();
+        void place_nought(int index);
+        void place_cross(int index);
 
-        Board(int width = 3, int height = 3) {
-            tiles = width * height;
-            fill(board_state.begin(), board_state.begin() + tiles, ' ');
-        }
+        unsigned width() { return width_; }
+        unsigned height() { return height_; }
+        vector<char> board_state() { return board_state_; }
+    
+    private:
+        unsigned width_;
+        unsigned height_;
+        // better is two dimensional vector
+        vector<char> board_state_;
+
 };
 
-/*
-void print_cell(int index) {
-    string piece;
-    if (index == 0)
-        string piece = " ";
-    else if (index == 1)
-        string piece = "X";
-    else
-        string piece = "O";
-    
-    cout << " " << piece << " ";
-}
+Board::Board(unsigned width, unsigned height) {
+    // save width and height as private attributes
+    width_ = width;
+    height_ = height;
+    board_state_ = vector<char>(width * height, 'x'); // change back later to char(32)
+};
 
-void print_board() {
-    for (int column = 0; column < 2; ++column) {
-        for (int row = 0; row < 2; ++row) {
-            print_cell(3 * column + row);
+// <TODO>: the formating doesn't work exactly as it should
+void Board::print_board() {
+    for (int i = 0; i < height_; ++i) {
+        for (int j = 0; j < width_ - 1; ++j) {
+            cout << ' ' << board_state_[i * height_ + j] << ' ' << '|';
         }
+        cout << ' ' << board_state_[i * width_] << ' ' << '\n';
+        cout << " -   -   - \n";
     }
+    cout << ' ' << board_state_[width_ * height_] << ' ';
 }
-
-void put_piece(int index, int piece) {
-    BOARD_STATE[index] = piece;
-}
-*/
 
 int main() {
-    Board my_board;
-    cout << "hello" << my_board.board_state[3] << "world";
-    cout << my_board.tiles;
-    cout << my_board.width;
-    cout << my_board.height;
+    Board board(3, 3);
+    board.print_board();
+
     return 0;
 }
