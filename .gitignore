@@ -1,3 +1,2 @@
-
-tic_tac_toe/.vscode/ipch/3874be534b90bb28/MAIN.ipch
-.gitignore.
+.vscode/
+build/
