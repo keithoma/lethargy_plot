@@ -1,4 +1,7 @@
+#include <array>
+#include <cstdlib>
 #include <iostream>
+#include <random>
 #include <vector>
 
 using namespace std;
@@ -6,61 +9,104 @@ using namespace std;
 // <TODO>: don't confuse "" and '' in c++; fix this
 // <TODO>: change board_state_ from one dimensional vector to two
 
+struct Position {
+	unsigned row;
+	unsigned column;
+};
+
+enum class State {
+	Unset,
+	X,
+	O,
+};
+
+ostream& operator<<(ostream& os, State s)
+{
+	switch (s)
+	{
+		case State::O:
+			return os << 'O';
+		case State::X:
+			return os << 'X';
+		case State::Unset:
+		default:
+			return os << ' ';
+	}
+}
+
 class Board {
-    public:
-        // <TODO>: add defualt values such as width, height = 3
-        Board(const unsigned width, const unsigned height);
+  public:
+	Board(unsigned width, unsigned height);
 
-        void print_board();
-        void place_cross(int index) { board_state_[index] = 'X'; }
-        void place_nought(int index) { board_state_[index] = 'O'; }
+	/// Default-constructs board with 3x3 dimension.
+	Board() : Board{3, 3} {}
 
-        unsigned width() { return width_; }
-        unsigned height() { return height_; }
-        vector<char> board_state() { return board_state_; }
-    
-    private:
-        unsigned width_;
-        unsigned height_;
-        vector<char> board_state_;
+	constexpr size_t offsetOf(Position const& p) const noexcept { return p.row * height_ + p.column; }
 
+	void print_board() const;
+
+	void place_cross(Position const& p) { board_state_[offsetOf(p)] = State::X; }
+	void place_nought(Position const& p) { board_state_[offsetOf(p)] = State::O; }
+
+	State& operator[](Position const& p) { return board_state_[offsetOf(p)]; }
+
+	unsigned width() const noexcept { return width_; }
+	unsigned height() const noexcept { return height_; }
+	vector<State> const& board_state() const noexcept { return board_state_; }
+
+  private:
+	unsigned width_;
+	unsigned height_;
+	vector<State> board_state_;
 };
 
-Board::Board(unsigned width, unsigned height) {
-    // save width and height as private attributes
-    width_ = width;
-    height_ = height;
-    board_state_ = vector<char>(width * height - 1, ' '); // change back later to char(32)
-};
+Board::Board(unsigned width, unsigned height) : width_{width}, height_{height}, board_state_{}
+{
+	board_state_.resize(width * height);
+}
 
 // <TODO>: the formating doesn't work exactly as it should
 // <TODO>: something is really wrong
-void Board::print_board() {
-    for (int i = 0; i < height_ - 1; ++i) {
-        for (int j = 0; j < width_ - 1; ++j) {
-            cout << " " << board_state_[i * height_ + j] << " )";
-        }
-        cout << " " << board_state_[i * width_ + 2] << " \n";
-        cout << " -   -   - \n";
-    }
+void Board::print_board() const
+{
+	for (unsigned i = 0; i < height_ - 1; ++i)
+	{
+		for (unsigned j = 0; j < width_ - 1; ++j)
+			cout << " " << board_state_[i * height_ + j] << " )";
 
-    for (int j = width_ * (height_ - 1); j < width_ * height_ - 1; ++j) {
-        cout << " " << board_state_[j] << " )";
-    }
-    cout << " " << board_state_[width_ * height_ - 1] << '\n';
+		cout << " " << board_state_[i * width_ + 2] << " \n";
+		cout << " -   -   - \n";
+	}
+
+	for (unsigned j = width_ * (height_ - 1); j < width_ * height_ - 1; ++j)
+		cout << " " << board_state_[j] << " )";
+
+	cout << " " << board_state_[width_ * height_ - 1] << '\n';
 }
 
-int main() {
-    Board board(3, 3);
-    board.place_cross(0);
-    board.place_cross(1);
-    board.place_nought(2);
-    board.place_cross(3);
-    board.place_cross(4);
-    board.place_cross(5);
-    board.place_cross(6);
-    board.place_nought(8);
-    board.print_board();
+void initialize_random(Board& board)
+{
+	static constexpr array<State, 3> states{State::Unset, State::X, State::O};
 
-    return 0;
+	mt19937 rng;
+	rng.seed(time(nullptr));
+
+	for (unsigned i = 0; i < 3; ++i)
+		for (unsigned j = 0; j < 3; ++j)
+			board[{i, j}] = states[uniform_int_distribution{0, 2}(rng)];
+}
+
+int main()
+{
+	Board board{3, 3};
+
+	// Randomly initialize the board.
+	initialize_random(board);
+
+	// or explicitly set field to given state
+	board[{2, 2}] = State::X;
+
+	board.print_board();
+
+	return EXIT_SUCCESS;
 }
