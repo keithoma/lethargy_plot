@@ -54,7 +54,7 @@ unsigned HuffmanCoding::cumulative_frequency_(unsigned n) {
     unsigned total;
     // can certainly be optimized
     for (unsigned i = huffman_set_.size(); i > n; --i) {
-        total += next(huffman_set_.begin(), i).second;
+        total += next(huffman_set_.begin(), i)->second;
         cout << total << "\n";
     }
     return total;
