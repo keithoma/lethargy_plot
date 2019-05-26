@@ -8,3 +8,6 @@ endif()
 
 add_executable(huffman_coding main.cpp)
 set_target_properties(huffman_coding PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+
+add_executable(huffman_test huffman_test.cpp)
+set_target_properties(huffman_test PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
