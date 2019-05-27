@@ -173,8 +173,100 @@ Node huffman_encode(string const& data)
     return move(root);
 }
 
+// -----------------------------------------------------------------------------
+// Source API
+
+class Source {
+  public:
+    virtual ~Source() = default;
+
+    using Buffer = std::vector<uint8_t>;
+
+    virtual std::size_t read(Buffer& target) = 0;
+};
+
+// reads from source without interpreting (identity)
+class RawSource : public Source {
+  public:
+    RawSource(std::istream& source) : source_{source} {}
+
+    std::size_t read(Buffer& target) override;
+
+  private:
+    std::istream& source_;
+};
+
+// Reads from huffman encoded source, for retrieving decoded data.
+class HuffmanSource : public Source {
+  public:
+    std::size_t read(Buffer& target) override;
+};
+
+class ImageSource : public Source {
+  public:
+    virtual unsigned width() const noexcept = 0;
+    virtual unsigned height() const noexcept = 0;
+};
+
+class PPMSource : public ImageSource {
+  public:
+    PPMSource(std::istream& source) : source_{source} {}
+    unsigned width() const noexcept override;
+    unsigned height() const noexcept override;
+    std::size_t read(Buffer& target) override;
+
+  private:
+    std::istream& source_;
+};
+
+class RLESource : public ImageSource {
+  public:
+    unsigned width() const noexcept override;
+    unsigned height() const noexcept override;
+    std::size_t read(Buffer& target) override;
+};
+
+// -----------------------------------------------------------------------------
+// Sink API
+
+class Sink {
+  public:
+    virtual ~Sink() = default;
+
+	virtual void write(uint8_t const* data, size_t count) = 0;
+};
+
+class PPMSink : public Sink {
+  public:
+    PPMSink(unsigned width, unsigned height, std::ostream& target);
+    void write(uint8_t const* data, size_t count) override;
+
+  private:
+    std::ostream& target_;
+};
+
+class RLESink : public Sink {
+  public:
+    RLESink(unsigned width, unsigned height, std::ostream& target);
+    void write(uint8_t const* data, size_t count) override;
+
+  private:
+    std::ostream& target_;
+};
+
+// -----------------------------------------------------------------------------
+// Converter CLI
+
+class Converter {
+  public:
+};
+
+// -----------------------------------------------------------------------------
+// CLI main
+
 int main(int argc, const char* argv[])
 {
+	// TODO: use Flags API from klex project (maybe also AnsiColor and unit test framework)
     Node const root = huffman_encode("aaaabcadaaabbaaaacaabaadc");
 
     cout << to_string(root) << "\n\n";
