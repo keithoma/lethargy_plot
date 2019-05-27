@@ -1,14 +1,13 @@
 #include <algorithm>
-#include <functional>
 #include <iterator>
-#include <iostream>
 #include <map>
-#include <list>
 #include <string>
 #include <vector>
 #include <memory>
 #include <variant>
 #include <sstream>
+
+#include <iostream>
 
 namespace ranges
 {
@@ -39,16 +38,7 @@ struct Branch
 	unique_ptr<Node> left;
 	unique_ptr<Node> right;
 	unsigned frequency;
-	//Branch(Node a, Node b, unsigned freq): left{move(a)}, right{move(b)}, frequency{freq} {}
 };
-
-unsigned getFrequency(Node const& n)
-{
-	if (holds_alternative<Leaf>(n))
-		return get<Leaf>(n).frequency;
-	else
-		return get<Branch>(n).frequency;
-}
 
 using HuffmanCodes = vector<pair<char, vector<bool>>>;
 
@@ -173,16 +163,16 @@ Node huffman_encode(string const& data)
 
 	// eliminate remaining frequencies and build tree bottom-up
 	// NB: It is guaranteed that root is a Branch (not a Leaf).
-	while (!freqs.empty())
+	do
 	{
 		auto a = ranges::min_element(freqs, smallestFreq);
 		Leaf a_{a->first, a->second};
-		auto const frequency = a_.frequency + getFrequency(root);
+		auto const frequency = a_.frequency + get<Branch>(root).frequency;
 		freqs.erase(a);
-		root = a_.frequency < getFrequency(root)
+		root = a_.frequency < get<Branch>(root).frequency
 			? Branch{make_unique<Node>(a_), make_unique<Node>(move(root)), frequency}
 			: Branch{make_unique<Node>(move(root)), make_unique<Node>(a_), frequency};
-	}
+	} while (!freqs.empty());
 
 	return move(root);
 }
