@@ -148,13 +148,8 @@ Node huffman_encode(string const& data)
 	auto static const smallestFreq = [](auto const& a, auto const& b) { return a.second < b.second; };
 
 	// collect frequencies
-	map<char, unsigned> map;
-	for_each(begin(data), end(data), [&](char c) { map[c]++; });
-
-	// linearize frequencies (TODO: remove, not necessary)
-	list<pair<char, unsigned>> freqs;
-	transform(begin(map), end(map), back_inserter(freqs),
-		[](auto const& freq) { return make_pair(freq.first, freq.second); });
+	map<char, unsigned> freqs;
+	for_each(begin(data), end(data), [&](char c) { freqs[c]++; });
 
 	// create initial root
 	Node root = [&]()
