@@ -26,7 +26,7 @@ using namespace std;
 struct Branch;
 struct Leaf;
 
-using Node = variant<unique_ptr<Branch>, Leaf>;
+using Node = variant<Branch, Leaf>;
 
 struct Leaf
 {
@@ -36,11 +36,10 @@ struct Leaf
 
 struct Branch
 {
-	Node left;
-	Node right;
+	unique_ptr<Node> left;
+	unique_ptr<Node> right;
 	unsigned frequency;
-
-	Branch(Node a, Node b, unsigned freq): left{move(a)}, right{move(b)}, frequency{freq} {}
+	//Branch(Node a, Node b, unsigned freq): left{move(a)}, right{move(b)}, frequency{freq} {}
 };
 
 unsigned getFrequency(Node const& n)
@@ -48,7 +47,7 @@ unsigned getFrequency(Node const& n)
 	if (holds_alternative<Leaf>(n))
 		return get<Leaf>(n).frequency;
 	else
-		return get<unique_ptr<Branch>>(n)->frequency;
+		return get<Branch>(n).frequency;
 }
 
 using HuffmanCodes = vector<pair<char, vector<bool>>>;
@@ -81,14 +80,14 @@ HuffmanCodes encode(Node const& root, vector<bool> state = {})
 		result.emplace_back(make_pair(get<Leaf>(root).ch, state));
 	else
 	{
-		auto const& br = get<unique_ptr<Branch>>(root);
+		auto const& br = get<Branch>(root);
 
 		state.push_back(false);
-		auto x = encode(br->left, state);
+		auto x = encode(*br.left, state);
 		result.insert(end(result), begin(x), end(x));
 
 		state.back() = true;
-		auto y = encode(br->right, state);
+		auto y = encode(*br.right, state);
 		result.insert(end(result), begin(y), end(y));
 	}
 
@@ -97,15 +96,15 @@ HuffmanCodes encode(Node const& root, vector<bool> state = {})
 
 void printDotFormat(ostream& os, Node const& n)
 {
-	if (holds_alternative<unique_ptr<Branch>>(n))
+	if (holds_alternative<Branch>(n))
 	{
-		auto const& br = get<unique_ptr<Branch>>(n);
+		auto const& br = get<Branch>(n);
 
-		os << "\"-(" << br->frequency << ")\" -> ";
-		printDotFormat(os, br->left);
+		os << "\"-(" << br.frequency << ")\" -> ";
+		printDotFormat(os, *br.left);
 
-		os << "\"-(" << br->frequency << ")\" -> ";
-		printDotFormat(os, br->right);
+		os << "\"-(" << br.frequency << ")\" -> ";
+		printDotFormat(os, *br.right);
 	}
 	else
 	{
@@ -135,8 +134,8 @@ std::string to_string(Node const& node)
 	}
 	else
 	{
-		auto const& br = get<unique_ptr<Branch>>(node);
-		os << "{" << br->frequency << ": " << to_string(br->left) << ", " << to_string(br->right) << "}";
+		auto const& br = get<Branch>(node);
+		os << "{" << br.frequency << ": " << to_string(*br.left) << ", " << to_string(*br.right) << "}";
 	}
 	return os.str();
 }
@@ -152,7 +151,7 @@ Node huffman_encode(string const& data)
 	map<char, unsigned> map;
 	for_each(begin(data), end(data), [&](char c) { map[c]++; });
 
-	// linearize frequencies
+	// linearize frequencies (TODO: remove, not necessary)
 	list<pair<char, unsigned>> freqs;
 	transform(begin(map), end(map), back_inserter(freqs),
 		[](auto const& freq) { return make_pair(freq.first, freq.second); });
@@ -161,16 +160,16 @@ Node huffman_encode(string const& data)
 	Node root = [&]()
 	{
 		auto a = ranges::min_element(freqs, smallestFreq);
-		Leaf a_{a->first, a->second};
+		auto a_ = Leaf{a->first, a->second};
 		freqs.erase(a);
 
 		auto b = ranges::min_element(freqs, smallestFreq);
 		if (b == end(freqs))
 			return Node{a_};
 
-		Leaf b_{b->first, b->second};
+		auto b_ = Leaf{b->first, b->second};
 		freqs.erase(b);
-		return Node{make_unique<Branch>(a_, b_, a_.frequency + b_.frequency)};
+		return Node{Branch{make_unique<Node>(a_), make_unique<Node>(b_), a_.frequency + b_.frequency}};
 	}();
 
 	if (freqs.empty())
@@ -184,15 +183,15 @@ Node huffman_encode(string const& data)
 		Leaf a_{a->first, a->second};
 		freqs.erase(a);
 		if (a_.frequency < getFrequency(root))
-			root = make_unique<Branch>(a_, move(root), a_.frequency + getFrequency(root));
+			root = Branch{make_unique<Node>(a_), make_unique<Node>(move(root)), a_.frequency + getFrequency(root)};
 		else
-			root = make_unique<Branch>(move(root), a_, a_.frequency + getFrequency(root));
+			root = Branch{make_unique<Node>(move(root)), make_unique<Node>(a_), a_.frequency + getFrequency(root)};
 	}
 
 	return move(root);
 }
 
-int main()
+int main(int argc, const char* argv[])
 {
 	Node const root = huffman_encode("aaaabcadaaabbaaaacaabaadc");
 
