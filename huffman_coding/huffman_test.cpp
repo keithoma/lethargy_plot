@@ -96,6 +96,7 @@ HuffmanCodes encode(Node const& root, vector<bool> state = {})
 
 void printDotFormat(ostream& os, Node const& n)
 {
+	// TODO: print edge labels (with "0" and "1")
 	if (holds_alternative<Branch>(n))
 	{
 		auto const& br = get<Branch>(n);
@@ -176,11 +177,11 @@ Node huffman_encode(string const& data)
 	{
 		auto a = ranges::min_element(freqs, smallestFreq);
 		Leaf a_{a->first, a->second};
+		auto const frequency = a_.frequency + getFrequency(root);
 		freqs.erase(a);
-		if (a_.frequency < getFrequency(root))
-			root = Branch{make_unique<Node>(a_), make_unique<Node>(move(root)), a_.frequency + getFrequency(root)};
-		else
-			root = Branch{make_unique<Node>(move(root)), make_unique<Node>(a_), a_.frequency + getFrequency(root)};
+		root = a_.frequency < getFrequency(root)
+			? Branch{make_unique<Node>(a_), make_unique<Node>(move(root)), frequency}
+			: Branch{make_unique<Node>(move(root)), make_unique<Node>(a_), frequency};
 	}
 
 	return move(root);
