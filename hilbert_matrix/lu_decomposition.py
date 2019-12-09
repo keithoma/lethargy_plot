@@ -32,7 +32,7 @@ def swap_row(mat, current_row):
     maximum = 0
     for i in range(current_row, len(mat)):
         for j in range(current_row, len(mat)):
-            if abs(mat[i][j]) > maximum:
+            if abs(mat[j][i]) > maximum:
                 maximum = abs(mat[i][j])
                 index = i
     
